@@ -16,6 +16,7 @@ import com.medo.navigation.NavigationController
 import com.medo.navigation.Route
 import com.medo.recipesearch.common.theme.RecipeSearchTheme
 import com.medo.recipesearch.navigation.addHomeGraph
+import com.medo.welcome.navigation.addWelcomeGraph
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -61,5 +62,6 @@ fun MainNavigation(
         startDestination = Route.App.label,
     ) {
         addHomeGraph { navController.popBackStack() }
+        addWelcomeGraph { navController.popBackStack() }
     }
 }

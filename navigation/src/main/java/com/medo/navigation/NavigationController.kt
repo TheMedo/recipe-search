@@ -9,11 +9,11 @@ import javax.inject.Singleton
 @Singleton
 class NavigationController @Inject constructor() {
 
-    private val _events = MutableSharedFlow<Route>(
+    private val _events = MutableSharedFlow<Destination>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events = _events.asSharedFlow()
 
-    fun navigateTo(route: Route) = _events.tryEmit(route)
+    fun navigateTo(destination: Destination) = _events.tryEmit(destination)
 }

@@ -1,4 +1,4 @@
-package com.medo.recipesearch.common.base
+package com.medo.common.base
 
 import androidx.lifecycle.ViewModel
 

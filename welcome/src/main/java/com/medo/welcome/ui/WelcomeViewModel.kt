@@ -1,4 +1,4 @@
-package com.medo.recipesearch.ui.home
+package com.medo.welcome.ui
 
 import com.medo.common.base.BaseViewModel
 import com.medo.navigation.NavigationController
@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class WelcomeViewModel @Inject constructor(
     private val navigationController: NavigationController,
 ) : BaseViewModel() {
 

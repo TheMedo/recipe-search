@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "Recipe Search"
 include(":app")
 include(":navigation")
+include(":welcome")
+include(":common")
