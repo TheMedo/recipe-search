@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.medo.navigation.Destination
 import com.medo.navigation.NavigationController
 import com.medo.navigation.Route
 import com.medo.recipesearch.common.theme.RecipeSearchTheme
@@ -52,7 +53,10 @@ fun MainNavigation(
     LaunchedEffect("navigation") {
         navigationController.events.onEach {
             navController.navigate(it.label) {
-                popUpTo(it.label)
+                when (it) {
+                    Destination.Welcome -> popUpTo(0)
+                    else -> popUpTo(it.label)
+                }
             }
         }.launchIn(this)
     }

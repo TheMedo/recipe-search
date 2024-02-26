@@ -1,12 +1,12 @@
 package com.medo.navigation
 
 sealed class Destination(val label: String) {
-    data object Home : Route("home")
-    data object Welcome : Route("welcome")
-    data class Details(val id: String) : Route("details/$id")
+    data object Home : Destination("home")
+    data object Welcome : Destination("welcome")
+    data class Details(val id: String) : Destination("details/$id")
 }
 
 sealed class Route(val label: String) {
-    data object App : Route("app")
-    data object Welcome : Route("welcome")
+    data object App : Route("route_app")
+    data object Welcome : Route("route_welcome")
 }
