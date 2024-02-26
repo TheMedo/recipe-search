@@ -1,6 +1,5 @@
 package com.medo.recipesearch.ui.home
 
-import androidx.lifecycle.viewModelScope
 import com.medo.common.base.BaseViewModel
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
@@ -8,7 +7,6 @@ import com.medo.navigation.Destination
 import com.medo.navigation.NavigationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface HomeEvent {
@@ -27,7 +25,7 @@ class HomeViewModel @Inject constructor(
 ) : BaseViewModel<HomeState, HomeEvent>(HomeState()) {
 
     init {
-        viewModelScope.launch {
+        async {
             storageRepository.getBoolean(StorageKey.HasSeenWelcome)
                 .collect { hasSeenWelcome ->
                     if (!hasSeenWelcome) {
