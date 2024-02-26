@@ -6,20 +6,37 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.medo.recipesearch.ui.theme.RecipeSearchTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
+import com.medo.navigation.NavigationController
+import com.medo.navigation.Route
+import com.medo.recipesearch.common.theme.RecipeSearchTheme
+import com.medo.recipesearch.navigation.addHomeGraph
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var navigationController: NavigationController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             RecipeSearchTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    Greeting("Android")
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    MainNavigation(navController = navController, navigationController = navigationController)
                 }
             }
         }
@@ -27,17 +44,22 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MainNavigation(
+    navController: NavHostController,
+    navigationController: NavigationController,
+) {
+    LaunchedEffect("navigation") {
+        navigationController.events.onEach {
+            navController.navigate(it.label) {
+                popUpTo(it.label)
+            }
+        }.launchIn(this)
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    RecipeSearchTheme {
-        Greeting("Android")
+    NavHost(
+        navController = navController,
+        startDestination = Route.App.label,
+    ) {
+        addHomeGraph { navController.popBackStack() }
     }
 }

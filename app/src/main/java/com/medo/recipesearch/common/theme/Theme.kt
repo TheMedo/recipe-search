@@ -1,4 +1,4 @@
-package com.medo.recipesearch.ui.theme
+package com.medo.recipesearch.common.theme
 
 import android.app.Activity
 import android.os.Build

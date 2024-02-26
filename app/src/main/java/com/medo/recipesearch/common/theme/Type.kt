@@ -1,4 +1,4 @@
-package com.medo.recipesearch.ui.theme
+package com.medo.recipesearch.common.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
