@@ -54,7 +54,7 @@ fun MainNavigation(
         navigationController.events.onEach {
             navController.navigate(it.label) {
                 when (it) {
-                    Destination.Welcome -> popUpTo(0)
+                    Destination.Welcome, Destination.Home -> popUpTo(0)
                     else -> popUpTo(it.label)
                 }
             }

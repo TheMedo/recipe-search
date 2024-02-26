@@ -56,6 +56,7 @@ android {
 
 dependencies {
     implementation(project(":common"))
+    implementation(project(":data"))
     implementation(project(":navigation"))
     implementation(project(":welcome"))
 
