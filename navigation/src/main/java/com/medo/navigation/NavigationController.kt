@@ -4,15 +4,15 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import javax.inject.Singleton
 
 interface NavigationController {
-    fun getEvents(): SharedFlow<Destination>
+    val events: SharedFlow<Destination>
 
     fun navigateTo(destination: Destination)
+
+    fun snackbar(message: String)
 }
 
-@Singleton
 class ComposeNavigationController : NavigationController {
 
     private val _events = MutableSharedFlow<Destination>(
@@ -20,9 +20,14 @@ class ComposeNavigationController : NavigationController {
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    override fun getEvents() = _events.asSharedFlow()
+    override val events: SharedFlow<Destination>
+        get() = _events.asSharedFlow()
 
     override fun navigateTo(destination: Destination) {
         _events.tryEmit(destination)
+    }
+
+    override fun snackbar(message: String) {
+        _events.tryEmit(Destination.Snackbar(message))
     }
 }

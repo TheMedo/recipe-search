@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import javax.inject.Singleton
 
 sealed interface StorageKey {
     data object HasSeenWelcome : StorageKey
@@ -27,7 +26,6 @@ interface StorageRepository {
     suspend fun removeFromSearchHistory(value: String)
 }
 
-@Singleton
 class DataStoreStorageRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : StorageRepository {

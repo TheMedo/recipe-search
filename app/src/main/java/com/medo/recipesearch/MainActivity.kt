@@ -1,15 +1,17 @@
 package com.medo.recipesearch
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.medo.navigation.Destination
@@ -21,6 +23,7 @@ import com.medo.welcome.navigation.addWelcomeGraph
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -29,43 +32,45 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var navigationController: NavigationController
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             RecipeSearchTheme {
-                Surface(
+                val navController = rememberNavController()
+                val scope = rememberCoroutineScope()
+                val snackbarHostState = remember { SnackbarHostState() }
+
+                LaunchedEffect("navigation") {
+                    navigationController.events.onEach { destination ->
+                        when (destination) {
+                            is Destination.Snackbar -> scope.launch {
+                                snackbarHostState.showSnackbar(destination.message)
+                            }
+
+                            else -> navController.navigate(destination.label) {
+                                when (destination) {
+                                    Destination.Welcome, Destination.Home -> popUpTo(0)
+                                    else -> popUpTo(destination.label)
+                                }
+                            }
+                        }
+                    }.launchIn(this)
+                }
+
+                Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                 ) {
-                    val navController = rememberNavController()
-                    MainNavigation(navController = navController, navigationController = navigationController)
+                    NavHost(
+                        navController = navController,
+                        startDestination = Route.App.label,
+                    ) {
+                        addHomeGraph()
+                        addWelcomeGraph { navController.popBackStack() }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun MainNavigation(
-    navController: NavHostController,
-    navigationController: NavigationController,
-) {
-    LaunchedEffect("navigation") {
-        navigationController.getEvents().onEach {
-            navController.navigate(it.label) {
-                when (it) {
-                    Destination.Welcome, Destination.Home -> popUpTo(0)
-                    else -> popUpTo(it.label)
-                }
-            }
-        }.launchIn(this)
-    }
-
-    NavHost(
-        navController = navController,
-        startDestination = Route.App.label,
-    ) {
-        addHomeGraph()
-        addWelcomeGraph { navController.popBackStack() }
     }
 }

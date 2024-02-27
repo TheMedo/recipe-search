@@ -39,6 +39,7 @@ private fun Home(
     state: HomeState,
     events: (HomeEvent) -> Unit,
 ) = Column(
+    modifier = Modifier.fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     SearchBar(

@@ -74,8 +74,14 @@ class HomeViewModel @Inject constructor(
             storageRepository.addToSearchHistory(currentState.searchQuery)
         }
 
-        asyncIo {
-            recipeRepository.searchRecipes(currentState.searchQuery)
+        asyncMain {
+            val result = awaitIo {
+                recipeRepository.searchRecipes(currentState.searchQuery)
+            }
+
+            if (result == null) {
+                navigationController.snackbar("Something went wrong, cannot search for recipes.")
+            }
         }
     }
 
