@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +44,7 @@ private fun Home(
     SearchBar(
         query = state.searchQuery,
         onQueryChange = { events(HomeEvent.ChangeSearchQuery(it)) },
-        onSearch = { events(HomeEvent.ChangeSearchActive(false)) },
+        onSearch = { events(HomeEvent.PerformSearch) },
         active = state.searchActive,
         onActiveChange = { events(HomeEvent.ChangeSearchActive(it)) },
         placeholder = { Text("Search recipes") },
@@ -60,15 +60,24 @@ private fun Home(
             }
         },
     ) {
-        repeat(4) {
+        Text(
+            "Search history",
+            modifier = Modifier.padding(16.dp),
+        )
+        state.searchHistory.map {
             ListItem(
-                headlineContent = { Text("Suggestion $it") },
-                leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                modifier = Modifier
-                    .clickable {
+                headlineContent = { Text(it) },
+                trailingContent = {
+                    IconButton(
+                        onClick = { events(HomeEvent.DeleteSearchHistory(it)) }
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null)
                     }
+                },
+                modifier = Modifier
+                    .clickable { events(HomeEvent.SelectSearchHistory(it)) }
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .padding(start = 16.dp)
             )
         }
     }
