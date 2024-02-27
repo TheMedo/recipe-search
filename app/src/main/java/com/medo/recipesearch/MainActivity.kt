@@ -51,7 +51,7 @@ fun MainNavigation(
     navigationController: NavigationController,
 ) {
     LaunchedEffect("navigation") {
-        navigationController.events.onEach {
+        navigationController.getEvents().onEach {
             navController.navigate(it.label) {
                 when (it) {
                     Destination.Welcome, Destination.Home -> popUpTo(0)
