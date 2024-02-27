@@ -9,7 +9,7 @@ import com.medo.navigation.Route
 import com.medo.recipesearch.ui.home.HomeView
 import com.medo.recipesearch.ui.home.HomeViewModel
 
-fun NavGraphBuilder.addHomeGraph(popBackStack: () -> Unit) {
+fun NavGraphBuilder.addHomeGraph() {
     navigation(
         startDestination = Destination.Home.label,
         route = Route.App.label,

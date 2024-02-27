@@ -1,6 +1,7 @@
 package com.medo.recipesearch.ui.home
 
 import com.medo.common.base.BaseViewModel
+import com.medo.common.di.CoroutineDispatchers
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
 import com.medo.navigation.Destination
@@ -20,12 +21,13 @@ data class HomeState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    coroutineDispatchers: CoroutineDispatchers,
     private val navigationController: NavigationController,
     private val storageRepository: StorageRepository,
-) : BaseViewModel<HomeState, HomeEvent>(HomeState()) {
+) : BaseViewModel<HomeState, HomeEvent>(HomeState(), coroutineDispatchers) {
 
     init {
-        async {
+        asyncMain {
             storageRepository.getBoolean(StorageKey.HasSeenWelcome)
                 .collect { hasSeenWelcome ->
                     if (!hasSeenWelcome) {

@@ -1,6 +1,7 @@
 package com.medo.welcome.ui
 
 import com.medo.common.base.BaseViewModel
+import com.medo.common.di.CoroutineDispatchers
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
 import com.medo.navigation.Destination
@@ -18,9 +19,10 @@ data class WelcomeState(
 
 @HiltViewModel
 class WelcomeViewModel @Inject constructor(
+    coroutineDispatchers: CoroutineDispatchers,
     private val navigationController: NavigationController,
     private val storageRepository: StorageRepository,
-) : BaseViewModel<WelcomeState, WelcomeEvent>(WelcomeState()) {
+) : BaseViewModel<WelcomeState, WelcomeEvent>(WelcomeState(), coroutineDispatchers) {
 
     override fun onEvent(event: WelcomeEvent) {
         when (event) {
@@ -28,8 +30,12 @@ class WelcomeViewModel @Inject constructor(
         }
     }
 
-    private fun onGetStarted() = async {
-        storageRepository.setBoolean(StorageKey.HasSeenWelcome, true)
-        navigationController.navigateTo(Destination.Home)
+    private fun onGetStarted() {
+        asyncIo {
+            storageRepository.setBoolean(StorageKey.HasSeenWelcome, true)
+        }
+        asyncMain {
+            navigationController.navigateTo(Destination.Home)
+        }
     }
 }

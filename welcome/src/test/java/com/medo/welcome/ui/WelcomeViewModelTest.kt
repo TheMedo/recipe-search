@@ -4,6 +4,7 @@ import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
 import com.medo.navigation.Destination
 import com.medo.navigation.NavigationController
+import com.medo.welcome.base.BaseTest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -17,16 +18,21 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class WelcomeViewModelTest {
+class WelcomeViewModelTest : BaseTest() {
 
     private lateinit var viewModel: WelcomeViewModel
+
     private val navigationController = mock<NavigationController>()
     private val storageRepository = mock<StorageRepository>()
 
     @Before
     fun setup() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        viewModel = WelcomeViewModel(navigationController, storageRepository)
+        viewModel = WelcomeViewModel(
+            coroutineDispatchers,
+            navigationController,
+            storageRepository
+        )
     }
 
     @Test
@@ -44,7 +50,5 @@ class WelcomeViewModelTest {
     }
 
     @After
-    fun cleanup() {
-        Dispatchers.resetMain()
-    }
+    fun cleanup() = Dispatchers.resetMain()
 }

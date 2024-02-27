@@ -65,7 +65,7 @@ fun MainNavigation(
         navController = navController,
         startDestination = Route.App.label,
     ) {
-        addHomeGraph { navController.popBackStack() }
+        addHomeGraph()
         addWelcomeGraph { navController.popBackStack() }
     }
 }
