@@ -11,12 +11,14 @@ import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 sealed interface HomeEvent {
-    data object ChangeState : HomeEvent
+    data class ChangeSearchQuery(val query: String) : HomeEvent
+    data class ChangeSearchActive(val active: Boolean) : HomeEvent
 }
 
 data class HomeState(
     val isInitializing: Boolean = true,
-    val title: String = "Home",
+    val searchQuery: String = "",
+    val searchActive: Boolean = false,
 )
 
 @HiltViewModel
@@ -43,8 +45,12 @@ class HomeViewModel @Inject constructor(
 
     override fun onEvent(event: HomeEvent) {
         when (event) {
-            HomeEvent.ChangeState -> setState(currentState.copy(title = "New home"))
+            is HomeEvent.ChangeSearchActive -> onChangeSearchActive(event.active)
+            is HomeEvent.ChangeSearchQuery -> onChangeSearchQuery(event.query)
         }
     }
 
+    private fun onChangeSearchActive(active: Boolean) = setState(currentState.copy(searchActive = active))
+
+    private fun onChangeSearchQuery(query: String) = setState(currentState.copy(searchQuery = query))
 }
