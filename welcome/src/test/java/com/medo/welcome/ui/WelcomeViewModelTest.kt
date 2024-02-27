@@ -22,12 +22,16 @@ class WelcomeViewModelTest : BaseTest() {
 
     private lateinit var viewModel: WelcomeViewModel
 
-    private val navigationController = mock<NavigationController>()
-    private val storageRepository = mock<StorageRepository>()
+    private lateinit var navigationController: NavigationController
+    private lateinit var storageRepository: StorageRepository
 
     @Before
     fun setup() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        navigationController = mock<NavigationController>()
+        storageRepository = mock<StorageRepository>()
+
         viewModel = WelcomeViewModel(
             coroutineDispatchers,
             navigationController,

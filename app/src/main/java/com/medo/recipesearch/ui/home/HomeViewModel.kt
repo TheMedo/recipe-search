@@ -2,6 +2,7 @@ package com.medo.recipesearch.ui.home
 
 import com.medo.common.base.BaseViewModel
 import com.medo.common.di.CoroutineDispatchers
+import com.medo.data.repository.RecipeRepository
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
 import com.medo.navigation.Destination
@@ -30,6 +31,7 @@ class HomeViewModel @Inject constructor(
     coroutineDispatchers: CoroutineDispatchers,
     private val navigationController: NavigationController,
     private val storageRepository: StorageRepository,
+    private val recipeRepository: RecipeRepository,
 ) : BaseViewModel<HomeState, HomeEvent>(HomeState(), coroutineDispatchers) {
 
     init {
@@ -71,7 +73,10 @@ class HomeViewModel @Inject constructor(
         asyncIo {
             storageRepository.addToSearchHistory(currentState.searchQuery)
         }
-        // TODO perform search
+
+        asyncIo {
+            recipeRepository.searchRecipes(currentState.searchQuery)
+        }
     }
 
     private fun onSelectSearchHistory(value: String) {
