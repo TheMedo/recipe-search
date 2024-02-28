@@ -4,6 +4,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import javax.inject.Inject
 
 interface NavigationController {
     val events: SharedFlow<Destination>
@@ -13,7 +14,7 @@ interface NavigationController {
     fun snackbar(message: String)
 }
 
-class ComposeNavigationController : NavigationController {
+class ComposeNavigationController @Inject constructor() : NavigationController {
 
     private val _events = MutableSharedFlow<Destination>(
         extraBufferCapacity = 1,

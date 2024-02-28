@@ -1,4 +1,4 @@
-package com.medo.data.model
+package com.medo.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 
@@ -21,6 +21,7 @@ data class Recipe(
     @SerializedName("inflammatoryIndex") val inflammatoryIndex: Double? = null,
     @SerializedName("totalCO2Emissions") val totalCO2Emissions: Double? = null,
     @SerializedName("co2EmissionsClass") val co2EmissionsClass: String? = null,
+    @SerializedName("totalTime") val totalTime: Double? = null,
     @SerializedName("totalWeight") val totalWeight: Double? = null,
     @SerializedName("cuisineType") val cuisineType: ArrayList<String> = arrayListOf(),
     @SerializedName("mealType") val mealType: ArrayList<String> = arrayListOf(),
@@ -28,7 +29,5 @@ data class Recipe(
     @SerializedName("instructions") val instructions: ArrayList<String> = arrayListOf(),
     @SerializedName("tags") val tags: ArrayList<String> = arrayListOf(),
     @SerializedName("externalId") val externalId: String? = null,
-    @SerializedName("totalNutrients") val totalNutrients: TotalNutrients? = TotalNutrients(),
-    @SerializedName("totalDaily") val totalDaily: TotalDaily? = TotalDaily(),
     @SerializedName("digest") val digest: ArrayList<Digest> = arrayListOf(),
 )

@@ -2,6 +2,7 @@ package com.medo.recipesearch.ui.home
 
 import com.medo.common.base.BaseViewModel
 import com.medo.common.di.CoroutineDispatchers
+import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.data.repository.RecipeRepository
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
@@ -22,8 +23,10 @@ sealed interface HomeEvent {
 data class HomeState(
     val isInitializing: Boolean = true,
     val searchQuery: String = "",
-    val searchActive: Boolean = false,
+    val isSearchActive: Boolean = false,
     val searchHistory: List<String> = emptyList(),
+    val searchResults: List<RecipeWithIngredients> = emptyList(),
+    val isSearching: Boolean = false,
 )
 
 @HiltViewModel
@@ -51,6 +54,11 @@ class HomeViewModel @Inject constructor(
                 setState(currentState.copy(searchHistory = it.reversed()))
             }
         }
+        asyncMain {
+            recipeRepository.getCurrentSearchResults().collect {
+                setState(currentState.copy(searchResults = it))
+            }
+        }
     }
 
     override fun onEvent(event: HomeEvent) = when (event) {
@@ -61,14 +69,16 @@ class HomeViewModel @Inject constructor(
         is HomeEvent.DeleteSearchHistory -> onDeleteSearchHistory(event.value)
     }
 
-    private fun onChangeSearchActive(active: Boolean) = setState(currentState.copy(searchActive = active))
+    private fun onChangeSearchActive(active: Boolean) = setState(currentState.copy(isSearchActive = active))
 
     private fun onChangeSearchQuery(query: String) = setState(currentState.copy(searchQuery = query))
 
     private fun onPerformSearch() {
-        setState(currentState.copy(searchActive = false))
+        setState(currentState.copy(isSearchActive = false))
 
         if (currentState.searchQuery.isEmpty()) return
+
+        setState(currentState.copy(isSearching = true))
 
         asyncIo {
             storageRepository.addToSearchHistory(currentState.searchQuery)
@@ -82,6 +92,8 @@ class HomeViewModel @Inject constructor(
             if (result == null) {
                 navigationController.snackbar("Something went wrong, cannot search for recipes.")
             }
+
+            setState(currentState.copy(isSearching = false))
         }
     }
 

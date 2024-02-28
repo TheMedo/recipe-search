@@ -102,7 +102,7 @@ class HomeViewModelTest : BaseTest() {
     fun `given search - when change to active - then set state`() = runTest {
         viewModel.onEvent(HomeEvent.ChangeSearchActive(true))
 
-        assertEquals(viewModel.state.value.searchActive, true)
+        assertEquals(viewModel.state.value.isSearchActive, true)
     }
 
     @Test
@@ -116,7 +116,7 @@ class HomeViewModelTest : BaseTest() {
     fun `given search - always - then set search not active`() = runTest {
         viewModel.onEvent(HomeEvent.PerformSearch)
 
-        assertEquals(viewModel.state.value.searchActive, false)
+        assertEquals(viewModel.state.value.isSearchActive, false)
     }
 
     @Test

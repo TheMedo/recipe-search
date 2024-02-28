@@ -1,4 +1,4 @@
-package com.medo.data.model
+package com.medo.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 

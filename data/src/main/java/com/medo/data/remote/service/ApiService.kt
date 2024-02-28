@@ -1,6 +1,6 @@
-package com.medo.data.service
+package com.medo.data.remote.service
 
-import com.medo.data.model.SearchRecipesResponse
+import com.medo.data.remote.model.SearchRecipesResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
