@@ -12,13 +12,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -47,10 +48,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.medo.data.local.model.Favorite
@@ -85,7 +89,7 @@ private fun Home(
 
     when (state.isSearching) {
         true -> CircularProgressIndicator(modifier = Modifier.padding(top = 48.dp))
-        else -> HomeGrid(
+        else -> HomeList(
             state = state,
             events = events,
         )
@@ -173,7 +177,7 @@ private fun HomeGrid(
 ) = LazyVerticalStaggeredGrid(
     columns = StaggeredGridCells.Fixed(2),
     modifier = Modifier
-        .fillMaxHeight()
+        .fillMaxSize()
         .padding(vertical = 16.dp),
     contentPadding = PaddingValues(horizontal = 16.dp),
     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -181,6 +185,26 @@ private fun HomeGrid(
 ) {
     items(state.searchResults) {
         RecipeGridItem(
+            item = it,
+            isFavorite = state.favorites.isFavorite(it.recipe),
+            events = events,
+        )
+    }
+}
+
+@Composable
+private fun HomeList(
+    state: HomeState,
+    events: (HomeEvent) -> Unit,
+) = LazyColumn(
+    modifier = Modifier
+        .fillMaxSize()
+        .padding(vertical = 16.dp),
+    contentPadding = PaddingValues(horizontal = 16.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp)
+) {
+    items(state.searchResults) {
+        RecipeListItem(
             item = it,
             isFavorite = state.favorites.isFavorite(it.recipe),
             events = events,
@@ -212,12 +236,8 @@ private fun RecipeGridItem(
                 placeholder = ColorPainter(generateRandomColor())
             )
 
-            Icon(
-                imageVector = when {
-                    isFavorite -> Icons.Default.Favorite
-                    else -> Icons.Outlined.FavoriteBorder
-                },
-                contentDescription = "Favorite recipe",
+            FavoriteIcon(
+                isFavorite = isFavorite,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
@@ -228,31 +248,25 @@ private fun RecipeGridItem(
                 tint = MaterialTheme.colorScheme.primaryContainer,
             )
 
-            val dish = item.recipe.dishType?.firstOrNull()
-            if (dish != null) {
-                Text(
-                    dish,
+            item.recipe.dishType?.firstOrNull()?.let {
+                DishText(
+                    text = it,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(8.dp)
                         .clip(shape = RoundedCornerShape(8.dp))
                         .background(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
                         .padding(8.dp),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    ),
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        val cuisine = item.recipe.cuisineType?.firstOrNull()
-        if (cuisine != null) {
-            Text(
-                cuisine,
+        item.recipe.cuisineType?.firstOrNull()?.let {
+            CuisineText(
+                text = it,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                style = MaterialTheme.typography.labelSmall,
             )
         }
 
@@ -274,27 +288,24 @@ private fun RecipeGridItem(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            val yield = item.recipe.yield?.toInt() ?: 0
-            if (yield > 0) {
-                TextWithIcon(
+            item.recipe.yield?.toInt()?.let {
+                IconText(
                     icon = Icons.Outlined.Restaurant,
-                    text = yield.toString(),
+                    text = it.toString(),
                 )
             }
 
-            val time = item.recipe.totalTime?.toInt() ?: 0
-            if (time > 0) {
-                TextWithIcon(
+            item.recipe.totalTime?.toInt()?.let {
+                IconText(
                     icon = Icons.Outlined.Timer,
-                    text = time.toString(),
+                    text = it.toString(),
                 )
             }
 
-            val calories = item.recipe.calories?.toInt() ?: 0
-            if (calories > 0) {
-                TextWithIcon(
+            item.recipe.calories?.toInt()?.let {
+                IconText(
                     icon = Icons.Outlined.OfflineBolt,
-                    text = calories.toString(),
+                    text = it.toString(),
                 )
             }
         }
@@ -304,7 +315,126 @@ private fun RecipeGridItem(
 }
 
 @Composable
-private fun TextWithIcon(
+private fun RecipeListItem(
+    item: RecipeWithIngredients,
+    isFavorite: Boolean,
+    events: (HomeEvent) -> Unit,
+) = Card(
+    modifier = Modifier
+        .fillMaxSize()
+        .clickable { events(HomeEvent.OpenItem(item)) },
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        val itemHeight = (LocalConfiguration.current.screenWidthDp / 2).dp - 64.dp
+
+        AsyncImage(
+            model = item.recipe.image,
+            contentDescription = "Recipe image",
+            modifier = Modifier.size(itemHeight),
+            contentScale = ContentScale.Crop,
+            placeholder = ColorPainter(generateRandomColor())
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(itemHeight),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                item.recipe.dishType?.firstOrNull()?.let {
+                    DishText(
+                        text = it,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .clip(shape = RoundedCornerShape(8.dp))
+                            .background(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(8.dp),
+                    )
+                }
+
+                FavoriteIcon(
+                    isFavorite = isFavorite,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clip(shape = RoundedCornerShape(8.dp))
+                        .clickable { events(HomeEvent.ToggleFavorite(item, isFavorite)) }
+                        .padding(8.dp),
+                )
+            }
+
+            Text(
+                (item.recipe.title ?: ""),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                style = MaterialTheme.typography.titleLarge,
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+            ) {
+                item.recipe.cuisineType?.firstOrNull()?.let {
+                    CuisineText(
+                        text = it,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                item.recipe.yield?.toInt()?.let {
+                    IconText(
+                        icon = Icons.Outlined.Restaurant,
+                        text = it.toString(),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+
+                item.recipe.totalTime?.toInt()?.let {
+                    IconText(
+                        icon = Icons.Outlined.Timer,
+                        text = it.toString(),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+
+                item.recipe.calories?.toInt()?.let {
+                    IconText(
+                        icon = Icons.Outlined.OfflineBolt,
+                        text = it.toString(),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun FavoriteIcon(
+    isFavorite: Boolean,
+    modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+) = Icon(
+    imageVector = when {
+        isFavorite -> Icons.Default.Favorite
+        else -> Icons.Outlined.FavoriteBorder
+    },
+    contentDescription = "Favorite recipe",
+    modifier = modifier,
+    tint = tint,
+)
+
+@Composable
+private fun IconText(
     icon: ImageVector,
     text: String,
 ) = Row(
@@ -323,6 +453,22 @@ private fun TextWithIcon(
         style = MaterialTheme.typography.labelMedium,
     )
 }
+
+@Composable
+private fun DishText(text: String, modifier: Modifier = Modifier) = Text(
+    text.capitalize(Locale.current),
+    modifier = modifier,
+    style = MaterialTheme.typography.labelMedium.copy(
+        color = MaterialTheme.colorScheme.primaryContainer
+    ),
+)
+
+@Composable
+private fun CuisineText(text: String, modifier: Modifier = Modifier) = Text(
+    text.capitalize(Locale.current),
+    modifier = modifier,
+    style = MaterialTheme.typography.labelMedium,
+)
 
 private fun List<Favorite>.isFavorite(recipe: Recipe): Boolean =
     firstOrNull { it.recipeUri == recipe.uri }?.isFavorite == true
