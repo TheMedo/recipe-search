@@ -3,6 +3,7 @@ package com.medo.data.repository
 import android.util.Log
 import com.medo.data.local.dao.SearchResultsDao
 import com.medo.data.local.mapper.toRecipesWithIngredients
+import com.medo.data.local.model.Favorite
 import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.data.remote.model.SearchRecipesResponse
 import com.medo.data.remote.service.ApiService
@@ -13,6 +14,10 @@ interface RecipeRepository {
     suspend fun getCurrentSearchResults(): Flow<List<RecipeWithIngredients>>
 
     suspend fun searchRecipes(query: String): SearchRecipesResponse?
+
+    suspend fun getFavorites(): Flow<List<Favorite>>
+
+    suspend fun updateFavorite(favorite: Favorite)
 }
 
 class EdamamRecipeRepository @Inject constructor(
@@ -39,4 +44,8 @@ class EdamamRecipeRepository @Inject constructor(
             return null
         }
     }
+
+    override suspend fun getFavorites(): Flow<List<Favorite>> = local.getFavorites()
+
+    override suspend fun updateFavorite(favorite: Favorite) = local.updateFavorite(favorite)
 }

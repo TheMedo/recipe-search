@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "recipes")
 data class Recipe(
     @PrimaryKey
-    val id: Int,
+    val uri: String,
+    val index: Int,
     val title: String?,
     val image: String?,
     val shareAs: String?,
@@ -17,6 +18,7 @@ data class Recipe(
     val ingredientLines: List<String>?,
     val calories: Double?,
     val totalTime: Double?,
+    val yield: Double?,
     val cuisineType: List<String>?,
     val mealType: List<String>?,
     val dishType: List<String>?,

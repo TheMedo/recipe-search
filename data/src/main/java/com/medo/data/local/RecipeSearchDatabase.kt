@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.medo.data.local.converters.StringListConverter
 import com.medo.data.local.dao.SearchResultsDao
+import com.medo.data.local.model.Favorite
 import com.medo.data.local.model.Ingredient
 import com.medo.data.local.model.Recipe
 
@@ -12,8 +13,9 @@ import com.medo.data.local.model.Recipe
     entities = [
         Recipe::class,
         Ingredient::class,
+        Favorite::class,
     ],
-    version = 2,
+    version = 1,
 )
 @TypeConverters(
     StringListConverter::class,

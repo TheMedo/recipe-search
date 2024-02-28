@@ -2,6 +2,7 @@ package com.medo.recipesearch.ui.home
 
 import com.medo.common.base.BaseViewModel
 import com.medo.common.di.CoroutineDispatchers
+import com.medo.data.local.model.Favorite
 import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.data.repository.RecipeRepository
 import com.medo.data.repository.StorageKey
@@ -18,6 +19,8 @@ sealed interface HomeEvent {
     data object PerformSearch : HomeEvent
     data class SelectSearchHistory(val value: String) : HomeEvent
     data class DeleteSearchHistory(val value: String) : HomeEvent
+    data class OpenItem(val item: RecipeWithIngredients) : HomeEvent
+    data class ToggleFavorite(val item: RecipeWithIngredients, val isFavorite: Boolean) : HomeEvent
 }
 
 data class HomeState(
@@ -26,6 +29,7 @@ data class HomeState(
     val isSearchActive: Boolean = false,
     val searchHistory: List<String> = emptyList(),
     val searchResults: List<RecipeWithIngredients> = emptyList(),
+    val favorites: List<Favorite> = emptyList(),
     val isSearching: Boolean = false,
 )
 
@@ -59,6 +63,11 @@ class HomeViewModel @Inject constructor(
                 setState(currentState.copy(searchResults = it))
             }
         }
+        asyncMain {
+            recipeRepository.getFavorites().collect {
+                setState(currentState.copy(favorites = it))
+            }
+        }
     }
 
     override fun onEvent(event: HomeEvent) = when (event) {
@@ -67,6 +76,8 @@ class HomeViewModel @Inject constructor(
         HomeEvent.PerformSearch -> onPerformSearch()
         is HomeEvent.SelectSearchHistory -> onSelectSearchHistory(event.value)
         is HomeEvent.DeleteSearchHistory -> onDeleteSearchHistory(event.value)
+        is HomeEvent.OpenItem -> onOpenItem(event.item)
+        is HomeEvent.ToggleFavorite -> onToggleFavorite(event.item, event.isFavorite)
     }
 
     private fun onChangeSearchActive(active: Boolean) = setState(currentState.copy(isSearchActive = active))
@@ -105,6 +116,21 @@ class HomeViewModel @Inject constructor(
     private fun onDeleteSearchHistory(value: String) {
         asyncIo {
             storageRepository.removeFromSearchHistory(value)
+        }
+    }
+
+    private fun onOpenItem(item: RecipeWithIngredients) {
+        println("ASD onOpenItem")
+    }
+
+    private fun onToggleFavorite(item: RecipeWithIngredients, isFavorite: Boolean) {
+        asyncIo {
+            recipeRepository.updateFavorite(
+                Favorite(
+                    recipeUri = item.recipe.uri,
+                    isFavorite = !isFavorite
+                )
+            )
         }
     }
 }

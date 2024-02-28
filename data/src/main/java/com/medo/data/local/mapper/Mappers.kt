@@ -9,12 +9,13 @@ import com.medo.data.remote.model.Ingredients
 fun ArrayList<Hits>.toRecipesWithIngredients(): List<RecipeWithIngredients> = mapIndexed { index, hit ->
     RecipeWithIngredients(
         recipe = hit.toRecipe(index),
-        ingredients = hit.recipe?.ingredients?.toIngredients(index) ?: emptyList(),
+        ingredients = hit.recipe?.ingredients?.toIngredients(hit.recipe.uri ?: "") ?: emptyList(),
     )
 }
 
 private fun Hits.toRecipe(index: Int): Recipe = Recipe(
-    id = index,
+    uri = recipe?.uri ?: "",
+    index = index,
     title = recipe?.label,
     image = recipe?.image,
     shareAs = recipe?.shareAs,
@@ -25,15 +26,16 @@ private fun Hits.toRecipe(index: Int): Recipe = Recipe(
     ingredientLines = recipe?.ingredientLines,
     calories = recipe?.calories,
     totalTime = recipe?.totalTime,
+    yield = recipe?.yield,
     cuisineType = recipe?.cuisineType,
     mealType = recipe?.mealType,
     dishType = recipe?.dishType,
     instructions = recipe?.instructions,
 )
 
-private fun ArrayList<Ingredients>.toIngredients(recipeId: Int) = map {
+private fun ArrayList<Ingredients>.toIngredients(recipeUri: String) = map {
     Ingredient(
-        recipeId = recipeId,
+        recipeUri = recipeUri,
         text = it.text,
         quantity = it.quantity,
         measure = it.measure,
