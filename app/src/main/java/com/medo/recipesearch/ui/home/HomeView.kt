@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.medo.recipesearch.ui.home
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -25,9 +28,12 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.OfflineBolt
@@ -36,12 +42,16 @@ import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -89,9 +99,30 @@ private fun Home(
 
     when (state.isSearching) {
         true -> CircularProgressIndicator(modifier = Modifier.padding(top = 48.dp))
-        else -> HomeList(
+        else -> AnimatedContent(
+            targetState = state.isGrid,
+            label = "View",
+        ) { isGrid ->
+            when (isGrid) {
+                true -> HomeGrid(
+                    state = state,
+                    events = events,
+                )
+
+                else -> HomeList(
+                    state = state,
+                    events = events,
+                )
+            }
+        }
+    }
+
+    val sheetState = rememberModalBottomSheetState()
+    if (state.showMenu) {
+        HomeMenu(
+            sheetState = sheetState,
             state = state,
-            events = events,
+            events = events
         )
     }
 }
@@ -121,7 +152,6 @@ private fun AnimatedSpacer(isSearchActive: Boolean) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeSearchBar(
     state: HomeState,
@@ -135,6 +165,25 @@ private fun HomeSearchBar(
     placeholder = { Text("Search recipes") },
     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
     trailingIcon = {
+        IconButton(
+            onClick = {
+                events(
+                    when (state.isSearchActive) {
+                        true -> HomeEvent.ChangeSearchQuery("")
+                        else -> HomeEvent.ToggleMenu
+                    }
+                )
+            }
+        ) {
+            Icon(
+                when (state.isSearchActive) {
+                    true -> Icons.Default.Clear
+                    else -> Icons.Default.MoreVert
+                },
+                contentDescription = null,
+            )
+        }
+
         when {
             state.searchQuery.isEmpty() -> {}
             else -> IconButton(
@@ -455,7 +504,10 @@ private fun IconText(
 }
 
 @Composable
-private fun DishText(text: String, modifier: Modifier = Modifier) = Text(
+private fun DishText(
+    text: String,
+    modifier: Modifier = Modifier,
+) = Text(
     text.capitalize(Locale.current),
     modifier = modifier,
     style = MaterialTheme.typography.labelMedium.copy(
@@ -464,11 +516,62 @@ private fun DishText(text: String, modifier: Modifier = Modifier) = Text(
 )
 
 @Composable
-private fun CuisineText(text: String, modifier: Modifier = Modifier) = Text(
+private fun CuisineText(
+    text: String,
+    modifier: Modifier = Modifier,
+) = Text(
     text.capitalize(Locale.current),
     modifier = modifier,
     style = MaterialTheme.typography.labelMedium,
 )
+
+@Composable
+private fun HomeMenu(
+    sheetState: SheetState,
+    state: HomeState,
+    events: (HomeEvent) -> Unit,
+) = ModalBottomSheet(
+    onDismissRequest = { events(HomeEvent.ToggleMenu) },
+    sheetState = sheetState,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 32.dp, start = 16.dp, end = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "View type",
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            FilledIconToggleButton(
+                checked = state.isGrid,
+                onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
+                Icon(
+                    Icons.Default.GridView,
+                    contentDescription = "Grid view"
+                )
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            FilledIconToggleButton(
+                checked = !state.isGrid,
+                onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ViewList,
+                    contentDescription = "List view"
+                )
+            }
+        }
+    }
+}
 
 private fun List<Favorite>.isFavorite(recipe: Recipe): Boolean =
     firstOrNull { it.recipeUri == recipe.uri }?.isFavorite == true

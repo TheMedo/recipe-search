@@ -17,6 +17,8 @@ sealed interface HomeEvent {
     data class ChangeSearchQuery(val query: String) : HomeEvent
     data class ChangeSearchActive(val active: Boolean) : HomeEvent
     data object PerformSearch : HomeEvent
+    data object ToggleMenu : HomeEvent
+    data object ToggleGrid : HomeEvent
     data class SelectSearchHistory(val value: String) : HomeEvent
     data class DeleteSearchHistory(val value: String) : HomeEvent
     data class OpenItem(val item: RecipeWithIngredients) : HomeEvent
@@ -31,6 +33,8 @@ data class HomeState(
     val searchResults: List<RecipeWithIngredients> = emptyList(),
     val favorites: List<Favorite> = emptyList(),
     val isSearching: Boolean = false,
+    val isGrid: Boolean = false,
+    val showMenu: Boolean = false,
 )
 
 @HiltViewModel
@@ -54,6 +58,11 @@ class HomeViewModel @Inject constructor(
             }
         }
         asyncMain {
+            storageRepository.getBoolean(StorageKey.IsGrid).collect {
+                setState(currentState.copy(isGrid = it))
+            }
+        }
+        asyncMain {
             storageRepository.getSearchHistory().collect {
                 setState(currentState.copy(searchHistory = it.reversed()))
             }
@@ -74,6 +83,8 @@ class HomeViewModel @Inject constructor(
         is HomeEvent.ChangeSearchActive -> onChangeSearchActive(event.active)
         is HomeEvent.ChangeSearchQuery -> onChangeSearchQuery(event.query)
         HomeEvent.PerformSearch -> onPerformSearch()
+        HomeEvent.ToggleMenu -> onToggleMenu()
+        HomeEvent.ToggleGrid -> onToggleGrid()
         is HomeEvent.SelectSearchHistory -> onSelectSearchHistory(event.value)
         is HomeEvent.DeleteSearchHistory -> onDeleteSearchHistory(event.value)
         is HomeEvent.OpenItem -> onOpenItem(event.item)
@@ -82,7 +93,15 @@ class HomeViewModel @Inject constructor(
 
     private fun onChangeSearchActive(active: Boolean) = setState(currentState.copy(isSearchActive = active))
 
-    private fun onChangeSearchQuery(query: String) = setState(currentState.copy(searchQuery = query))
+    private fun onChangeSearchQuery(query: String) {
+        val isCurrentQueryEmpty = currentState.searchQuery.isEmpty()
+
+        setState(currentState.copy(searchQuery = query))
+
+        if (query.isEmpty() && isCurrentQueryEmpty) {
+            setState(currentState.copy(isSearchActive = false))
+        }
+    }
 
     private fun onPerformSearch() {
         setState(currentState.copy(isSearchActive = false))
@@ -108,6 +127,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun onToggleMenu() = setState(currentState.copy(showMenu = !currentState.showMenu))
+
+    private fun onToggleGrid() {
+        asyncIo {
+            storageRepository.setBoolean(StorageKey.IsGrid, !currentState.isGrid)
+        }
+    }
+
     private fun onSelectSearchHistory(value: String) {
         setState(currentState.copy(searchQuery = value))
         onPerformSearch()
@@ -120,7 +147,6 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun onOpenItem(item: RecipeWithIngredients) {
-        println("ASD onOpenItem")
     }
 
     private fun onToggleFavorite(item: RecipeWithIngredients, isFavorite: Boolean) {
