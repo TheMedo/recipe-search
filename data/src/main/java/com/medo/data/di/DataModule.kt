@@ -7,11 +7,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.medo.data.BuildConfig
 import com.medo.data.local.RecipeSearchDatabase
+import com.medo.data.local.dao.SearchHistoryDao
 import com.medo.data.local.dao.SearchResultsDao
 import com.medo.data.remote.service.ApiService
 import com.medo.data.repository.DataStoreStorageRepository
 import com.medo.data.repository.EdamamRecipeRepository
 import com.medo.data.repository.RecipeRepository
+import com.medo.data.repository.RoomSearchHistoryRepository
+import com.medo.data.repository.SearchHistoryRepository
 import com.medo.data.repository.StorageRepository
 import dagger.Binds
 import dagger.Module
@@ -79,6 +82,10 @@ object DataModule {
     @Provides
     @Singleton
     fun provideSearchResultsDao(database: RecipeSearchDatabase): SearchResultsDao = database.searchResultsDao()
+
+    @Provides
+    @Singleton
+    fun provideSearchHistoryDao(database: RecipeSearchDatabase): SearchHistoryDao = database.searchHistoryDao()
 }
 
 @Module
@@ -91,4 +98,8 @@ abstract class DataModuleBinds {
     @Binds
     @Singleton
     abstract fun bindRecipeRepository(repository: EdamamRecipeRepository): RecipeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchHistoryRepository(repository: RoomSearchHistoryRepository): SearchHistoryRepository
 }

@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface RecipeRepository {
-    suspend fun getCurrentSearchResults(): Flow<List<RecipeWithIngredients>>
+    fun getCurrentSearchResults(): Flow<List<RecipeWithIngredients>>
 
     suspend fun searchRecipes(query: String): SearchRecipesResponse?
 
-    suspend fun getFavorites(): Flow<List<Favorite>>
+    fun getFavorites(): Flow<List<Favorite>>
 
     suspend fun updateFavorite(favorite: Favorite)
 }
@@ -25,8 +25,7 @@ class EdamamRecipeRepository @Inject constructor(
     private val local: SearchResultsDao,
 ) : RecipeRepository {
 
-    override suspend fun getCurrentSearchResults(): Flow<List<RecipeWithIngredients>> =
-        local.getRecipesWithIngredients()
+    override fun getCurrentSearchResults(): Flow<List<RecipeWithIngredients>> = local.getRecipesWithIngredients()
 
     override suspend fun searchRecipes(query: String): SearchRecipesResponse? {
         try {
@@ -45,7 +44,7 @@ class EdamamRecipeRepository @Inject constructor(
         }
     }
 
-    override suspend fun getFavorites(): Flow<List<Favorite>> = local.getFavorites()
+    override fun getFavorites(): Flow<List<Favorite>> = local.getFavorites()
 
     override suspend fun updateFavorite(favorite: Favorite) = local.updateFavorite(favorite)
 }

@@ -194,7 +194,7 @@ private fun HomeSearchBar(
 
     state.searchHistory.map {
         ListItem(
-            headlineContent = { Text(it) },
+            headlineContent = { Text(it.query) },
             trailingContent = {
                 IconButton(
                     onClick = { events(HomeEvent.DeleteSearchHistory(it)) }

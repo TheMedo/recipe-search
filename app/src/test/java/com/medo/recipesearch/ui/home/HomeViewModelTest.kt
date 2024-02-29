@@ -1,6 +1,8 @@
 package com.medo.recipesearch.ui.home
 
+import com.medo.data.local.model.SearchHistory
 import com.medo.data.repository.RecipeRepository
+import com.medo.data.repository.SearchHistoryRepository
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
 import com.medo.navigation.Destination
@@ -32,6 +34,7 @@ class HomeViewModelTest : BaseTest() {
 
     private lateinit var navigationController: NavigationController
     private lateinit var storageRepository: StorageRepository
+    private lateinit var searchHistoryRepository: SearchHistoryRepository
     private lateinit var recipeRepository: RecipeRepository
 
     @Before
@@ -41,28 +44,24 @@ class HomeViewModelTest : BaseTest() {
         navigationController = mock<NavigationController>()
         storageRepository = mock<StorageRepository> {
             on { getBoolean(any()) } doReturn emptyFlow()
+        }
+        searchHistoryRepository = mock<SearchHistoryRepository> {
             on { getSearchHistory() } doReturn emptyFlow()
         }
-        recipeRepository = mock<RecipeRepository>()
+        recipeRepository = mock<RecipeRepository> {
+            on { getCurrentSearchResults() } doReturn emptyFlow()
 
-        viewModel = HomeViewModel(
-            coroutineDispatchers,
-            navigationController,
-            storageRepository,
-            recipeRepository,
-        )
+            on { getFavorites() } doReturn emptyFlow()
+        }
+
+        viewModel = getViewModel()
     }
 
     @Test
     fun `given init - when has not seen welcome - then navigate to welcome`() = runTest {
         whenever(storageRepository.getBoolean(StorageKey.HasSeenWelcome)).thenReturn(flowOf(false))
 
-        viewModel = HomeViewModel(
-            coroutineDispatchers,
-            navigationController,
-            storageRepository,
-            recipeRepository,
-        )
+        viewModel = getViewModel()
 
         verify(navigationController).navigateTo(Destination.Welcome)
     }
@@ -71,31 +70,9 @@ class HomeViewModelTest : BaseTest() {
     fun `given init - when has seen welcome - then set initializing false`() = runTest {
         whenever(storageRepository.getBoolean(StorageKey.HasSeenWelcome)).thenReturn(flowOf(true))
 
-        viewModel = HomeViewModel(
-            coroutineDispatchers,
-            navigationController,
-            storageRepository,
-            recipeRepository,
-        )
+        viewModel = getViewModel()
 
         assertEquals(viewModel.state.value.isInitializing, false)
-    }
-
-    @Test
-    fun `given init - when has search history - then reverse search history`() = runTest {
-        whenever(storageRepository.getSearchHistory()).thenReturn(flowOf(LinkedHashSet<String>().apply {
-            add("1")
-            add("2")
-        }))
-
-        viewModel = HomeViewModel(
-            coroutineDispatchers,
-            navigationController,
-            storageRepository,
-            recipeRepository,
-        )
-
-        assertEquals(viewModel.state.value.searchHistory, listOf("2", "1"))
     }
 
     @Test
@@ -124,7 +101,7 @@ class HomeViewModelTest : BaseTest() {
         viewModel.onEvent(HomeEvent.ChangeSearchQuery(""))
         viewModel.onEvent(HomeEvent.PerformSearch)
 
-        verify(storageRepository, never()).addToSearchHistory("")
+        verify(searchHistoryRepository, never()).addSearchHistory("")
     }
 
     @Test
@@ -132,23 +109,32 @@ class HomeViewModelTest : BaseTest() {
         viewModel.onEvent(HomeEvent.ChangeSearchQuery("query"))
         viewModel.onEvent(HomeEvent.PerformSearch)
 
-        verify(storageRepository).addToSearchHistory("query")
+        verify(searchHistoryRepository).addSearchHistory("query")
     }
 
     @Test
     fun `given search history - when selected - then update search query`() = runTest {
-        viewModel.onEvent(HomeEvent.SelectSearchHistory("query"))
+        viewModel.onEvent(HomeEvent.SelectSearchHistory(SearchHistory("query")))
 
         assertEquals(viewModel.state.value.searchQuery, "query")
     }
 
     @Test
     fun `given search history - when deleted - then remove search history`() = runTest {
-        viewModel.onEvent(HomeEvent.DeleteSearchHistory("query"))
+        val searchHistory = SearchHistory("query")
+        viewModel.onEvent(HomeEvent.DeleteSearchHistory(searchHistory))
 
-        verify(storageRepository).removeFromSearchHistory("query")
+        verify(searchHistoryRepository).removeSearchHistory(searchHistory)
     }
 
     @After
     fun cleanup() = Dispatchers.resetMain()
+
+    private fun getViewModel() = HomeViewModel(
+        coroutineDispatchers,
+        navigationController,
+        storageRepository,
+        searchHistoryRepository,
+        recipeRepository,
+    )
 }

@@ -4,7 +4,9 @@ import com.medo.common.base.BaseViewModel
 import com.medo.common.di.CoroutineDispatchers
 import com.medo.data.local.model.Favorite
 import com.medo.data.local.model.RecipeWithIngredients
+import com.medo.data.local.model.SearchHistory
 import com.medo.data.repository.RecipeRepository
+import com.medo.data.repository.SearchHistoryRepository
 import com.medo.data.repository.StorageKey
 import com.medo.data.repository.StorageRepository
 import com.medo.navigation.Destination
@@ -19,8 +21,8 @@ sealed interface HomeEvent {
     data object PerformSearch : HomeEvent
     data object ToggleMenu : HomeEvent
     data object ToggleGrid : HomeEvent
-    data class SelectSearchHistory(val value: String) : HomeEvent
-    data class DeleteSearchHistory(val value: String) : HomeEvent
+    data class SelectSearchHistory(val value: SearchHistory) : HomeEvent
+    data class DeleteSearchHistory(val value: SearchHistory) : HomeEvent
     data class OpenItem(val item: RecipeWithIngredients) : HomeEvent
     data class ToggleFavorite(val item: RecipeWithIngredients, val isFavorite: Boolean) : HomeEvent
 }
@@ -29,7 +31,7 @@ data class HomeState(
     val isInitializing: Boolean = true,
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
-    val searchHistory: List<String> = emptyList(),
+    val searchHistory: List<SearchHistory> = emptyList(),
     val searchResults: List<RecipeWithIngredients> = emptyList(),
     val favorites: List<Favorite> = emptyList(),
     val isSearching: Boolean = false,
@@ -42,6 +44,7 @@ class HomeViewModel @Inject constructor(
     coroutineDispatchers: CoroutineDispatchers,
     private val navigationController: NavigationController,
     private val storageRepository: StorageRepository,
+    private val searchHistoryRepository: SearchHistoryRepository,
     private val recipeRepository: RecipeRepository,
 ) : BaseViewModel<HomeState, HomeEvent>(HomeState(), coroutineDispatchers) {
 
@@ -63,8 +66,8 @@ class HomeViewModel @Inject constructor(
             }
         }
         asyncMain {
-            storageRepository.getSearchHistory().collect {
-                setState(currentState.copy(searchHistory = it.reversed()))
+            searchHistoryRepository.getSearchHistory().collect {
+                setState(currentState.copy(searchHistory = it))
             }
         }
         asyncMain {
@@ -111,7 +114,7 @@ class HomeViewModel @Inject constructor(
         setState(currentState.copy(isSearching = true))
 
         asyncIo {
-            storageRepository.addToSearchHistory(currentState.searchQuery)
+            searchHistoryRepository.addSearchHistory(currentState.searchQuery)
         }
 
         asyncMain {
@@ -135,14 +138,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun onSelectSearchHistory(value: String) {
-        setState(currentState.copy(searchQuery = value))
+    private fun onSelectSearchHistory(value: SearchHistory) {
+        setState(currentState.copy(searchQuery = value.query))
         onPerformSearch()
     }
 
-    private fun onDeleteSearchHistory(value: String) {
+    private fun onDeleteSearchHistory(value: SearchHistory) {
         asyncIo {
-            storageRepository.removeFromSearchHistory(value)
+            searchHistoryRepository.removeSearchHistory(value)
         }
     }
 
