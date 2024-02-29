@@ -183,15 +183,6 @@ private fun HomeSearchBar(
                 contentDescription = null,
             )
         }
-
-        when {
-            state.searchQuery.isEmpty() -> {}
-            else -> IconButton(
-                onClick = { events(HomeEvent.ChangeSearchQuery("")) }
-            ) {
-                Icon(Icons.Default.Clear, contentDescription = null)
-            }
-        }
     },
 ) {
     if (state.searchHistory.isNotEmpty()) {
