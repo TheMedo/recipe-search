@@ -17,8 +17,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        val edamamApiId: String = gradleLocalProperties(rootDir).getProperty("edamamApiId")
-        val edamamApiKey: String = gradleLocalProperties(rootDir).getProperty("edamamApiKey")
+        val edamamApiId: String = gradleLocalProperties(rootDir, providers).getProperty("edamamApiId")
+        val edamamApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("edamamApiKey")
 
         buildConfigField("String", "EDAMAM_API_ID", edamamApiId)
         buildConfigField("String", "EDAMAM_API_KEY", edamamApiKey)
