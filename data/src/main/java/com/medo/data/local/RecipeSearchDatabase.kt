@@ -7,7 +7,6 @@ import com.medo.data.local.converters.DateConverter
 import com.medo.data.local.converters.StringListConverter
 import com.medo.data.local.dao.SearchHistoryDao
 import com.medo.data.local.dao.SearchResultsDao
-import com.medo.data.local.model.Favorite
 import com.medo.data.local.model.Ingredient
 import com.medo.data.local.model.Recipe
 import com.medo.data.local.model.SearchHistory
@@ -16,7 +15,6 @@ import com.medo.data.local.model.SearchHistory
     entities = [
         Recipe::class,
         Ingredient::class,
-        Favorite::class,
         SearchHistory::class,
     ],
     version = 1,

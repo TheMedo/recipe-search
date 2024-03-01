@@ -4,8 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Upsert
-import com.medo.data.local.model.Favorite
 import com.medo.data.local.model.Ingredient
 import com.medo.data.local.model.Recipe
 import com.medo.data.local.model.RecipeWithIngredients
@@ -41,10 +39,4 @@ interface SearchResultsDao {
         deleteRecipes()
         deleteIngredients()
     }
-
-    @Query("SELECT * FROM favorites")
-    fun getFavorites(): Flow<List<Favorite>>
-
-    @Upsert
-    suspend fun updateFavorite(favorite: Favorite)
 }

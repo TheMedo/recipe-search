@@ -31,11 +31,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.OfflineBolt
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Timer
@@ -58,7 +56,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -67,8 +64,6 @@ import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.medo.data.local.model.Favorite
-import com.medo.data.local.model.Recipe
 import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.recipesearch.common.theme.generateRandomColor
 
@@ -226,7 +221,6 @@ private fun HomeGrid(
     items(state.searchResults) {
         RecipeGridItem(
             item = it,
-            isFavorite = state.favorites.isFavorite(it.recipe),
             events = events,
         )
     }
@@ -246,7 +240,6 @@ private fun HomeList(
     items(state.searchResults) {
         RecipeListItem(
             item = it,
-            isFavorite = state.favorites.isFavorite(it.recipe),
             events = events,
         )
     }
@@ -255,7 +248,6 @@ private fun HomeList(
 @Composable
 private fun RecipeGridItem(
     item: RecipeWithIngredients,
-    isFavorite: Boolean,
     events: (HomeEvent) -> Unit,
 ) = Card(
     modifier = Modifier
@@ -274,18 +266,6 @@ private fun RecipeGridItem(
                     .height((LocalConfiguration.current.screenWidthDp / 2).dp - 32.dp),
                 contentScale = ContentScale.Crop,
                 placeholder = ColorPainter(generateRandomColor())
-            )
-
-            FavoriteIcon(
-                isFavorite = isFavorite,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .clip(shape = RoundedCornerShape(8.dp))
-                    .clickable { events(HomeEvent.ToggleFavorite(item, isFavorite)) }
-                    .background(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                    .padding(8.dp),
-                tint = MaterialTheme.colorScheme.primaryContainer,
             )
 
             item.recipe.dishType?.firstOrNull()?.let {
@@ -357,7 +337,6 @@ private fun RecipeGridItem(
 @Composable
 private fun RecipeListItem(
     item: RecipeWithIngredients,
-    isFavorite: Boolean,
     events: (HomeEvent) -> Unit,
 ) = Card(
     modifier = Modifier
@@ -382,28 +361,13 @@ private fun RecipeListItem(
                 .fillMaxWidth()
                 .height(itemHeight),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                item.recipe.dishType?.firstOrNull()?.let {
-                    DishText(
-                        text = it,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clip(shape = RoundedCornerShape(8.dp))
-                            .background(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                            .padding(8.dp),
-                    )
-                }
-
-                FavoriteIcon(
-                    isFavorite = isFavorite,
+            item.recipe.dishType?.firstOrNull()?.let {
+                DishText(
+                    text = it,
                     modifier = Modifier
                         .padding(8.dp)
                         .clip(shape = RoundedCornerShape(8.dp))
-                        .clickable { events(HomeEvent.ToggleFavorite(item, isFavorite)) }
+                        .background(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         .padding(8.dp),
                 )
             }
@@ -457,21 +421,6 @@ private fun RecipeListItem(
         }
     }
 }
-
-@Composable
-private fun FavoriteIcon(
-    isFavorite: Boolean,
-    modifier: Modifier = Modifier,
-    tint: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-) = Icon(
-    imageVector = when {
-        isFavorite -> Icons.Default.Favorite
-        else -> Icons.Outlined.FavoriteBorder
-    },
-    contentDescription = "Favorite recipe",
-    modifier = modifier,
-    tint = tint,
-)
 
 @Composable
 private fun IconText(
@@ -563,6 +512,3 @@ private fun HomeMenu(
         }
     }
 }
-
-private fun List<Favorite>.isFavorite(recipe: Recipe): Boolean =
-    firstOrNull { it.recipeUri == recipe.uri }?.isFavorite == true

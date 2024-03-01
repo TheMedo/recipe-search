@@ -50,8 +50,6 @@ class HomeViewModelTest : BaseTest() {
         }
         recipeRepository = mock<RecipeRepository> {
             on { getCurrentSearchResults() } doReturn emptyFlow()
-
-            on { getFavorites() } doReturn emptyFlow()
         }
 
         viewModel = getViewModel()
