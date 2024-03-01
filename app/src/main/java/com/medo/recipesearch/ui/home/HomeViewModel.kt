@@ -22,7 +22,7 @@ sealed interface HomeEvent {
     data class ChangeSearchActive(val active: Boolean) : HomeEvent
     data object PerformSearch : HomeEvent
     data object ToggleMenu : HomeEvent
-    data object ToggleGrid : HomeEvent
+    data object ToggleViewMode : HomeEvent
     data class SelectSearchHistory(val value: SearchHistory) : HomeEvent
     data class DeleteSearchHistory(val value: SearchHistory) : HomeEvent
     data class OpenItem(val item: RecipeWithIngredients) : HomeEvent
@@ -86,7 +86,7 @@ class HomeViewModel @Inject constructor(
         is HomeEvent.ChangeSearchQuery -> onChangeSearchQuery(event.query)
         HomeEvent.PerformSearch -> onPerformSearch()
         HomeEvent.ToggleMenu -> onToggleMenu()
-        HomeEvent.ToggleGrid -> onToggleGrid()
+        HomeEvent.ToggleViewMode -> onToggleViewMode()
         is HomeEvent.SelectSearchHistory -> onSelectSearchHistory(event.value)
         is HomeEvent.DeleteSearchHistory -> onDeleteSearchHistory(event.value)
         is HomeEvent.OpenItem -> onOpenItem(event.item)
@@ -133,7 +133,7 @@ class HomeViewModel @Inject constructor(
 
     private fun onToggleMenu() = setState(currentState.copy(showMenu = !currentState.showMenu))
 
-    private fun onToggleGrid() {
+    private fun onToggleViewMode() {
         asyncIo {
             storageRepository.setBoolean(StorageKey.IsList, !currentState.isList)
         }
@@ -165,11 +165,11 @@ class HomeViewModel @Inject constructor(
         setState(currentState.copy(isLoadingMore = true))
 
         val searchResultsNextPage = lastSearchResultResponse?.links?.next?.href ?: return
-        val searchResultsFrom = lastSearchResultResponse?.from ?: 0
+        val searchResultsTo = lastSearchResultResponse?.to ?: 0
 
         asyncMain {
             val result = awaitIo {
-                recipeRepository.searchRecipesNextPage(searchResultsNextPage, searchResultsFrom)
+                recipeRepository.searchRecipesNextPage(searchResultsNextPage, searchResultsTo)
             }
 
             lastSearchResultResponse = result

@@ -538,7 +538,7 @@ private fun HomeMenu(
 
             FilledIconToggleButton(
                 checked = !state.isList,
-                onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
+                onCheckedChange = { events(HomeEvent.ToggleViewMode) }) {
                 Icon(
                     Icons.Default.GridView,
                     contentDescription = "Grid view"
@@ -549,7 +549,7 @@ private fun HomeMenu(
 
             FilledIconToggleButton(
                 checked = state.isList,
-                onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
+                onCheckedChange = { events(HomeEvent.ToggleViewMode) }) {
                 Icon(
                     Icons.AutoMirrored.Filled.ViewList,
                     contentDescription = "List view"

@@ -14,7 +14,7 @@ interface RecipeRepository {
 
     suspend fun searchRecipes(query: String): SearchRecipesResponse?
 
-    suspend fun searchRecipesNextPage(url: String, from: Int): SearchRecipesResponse?
+    suspend fun searchRecipesNextPage(url: String, to: Int): SearchRecipesResponse?
 
     fun getRecipe(uri: String): Flow<RecipeWithIngredients>
 }
@@ -43,14 +43,14 @@ class EdamamRecipeRepository @Inject constructor(
         }
     }
 
-    override suspend fun searchRecipesNextPage(url: String, from: Int): SearchRecipesResponse? {
+    override suspend fun searchRecipesNextPage(url: String, to: Int): SearchRecipesResponse? {
         try {
             val response = remote.searchRecipesByUrl(url)
             if (!response.isSuccessful) return null
 
             val data = response.body() ?: return null
 
-            local.insertRecipesWithIngredients(data.hits.toRecipesWithIngredients(offset = from))
+            local.insertRecipesWithIngredients(data.hits.toRecipesWithIngredients(offset = to))
 
             return data
         } catch (e: Exception) {
