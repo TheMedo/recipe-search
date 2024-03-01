@@ -6,9 +6,9 @@ import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.data.remote.model.Hits
 import com.medo.data.remote.model.Ingredients
 
-fun ArrayList<Hits>.toRecipesWithIngredients(): List<RecipeWithIngredients> = mapIndexed { index, hit ->
+fun ArrayList<Hits>.toRecipesWithIngredients(offset: Int = 0): List<RecipeWithIngredients> = mapIndexed { index, hit ->
     RecipeWithIngredients(
-        recipe = hit.toRecipe(index),
+        recipe = hit.toRecipe(offset + index),
         ingredients = hit.recipe?.ingredients?.toIngredients(hit.recipe.uri ?: "") ?: emptyList(),
     )
 }

@@ -4,6 +4,7 @@ import com.medo.common.base.BaseViewModel
 import com.medo.common.di.CoroutineDispatchers
 import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.data.local.model.SearchHistory
+import com.medo.data.remote.model.SearchRecipesResponse
 import com.medo.data.repository.RecipeRepository
 import com.medo.data.repository.SearchHistoryRepository
 import com.medo.data.repository.StorageKey
@@ -25,6 +26,7 @@ sealed interface HomeEvent {
     data class SelectSearchHistory(val value: SearchHistory) : HomeEvent
     data class DeleteSearchHistory(val value: SearchHistory) : HomeEvent
     data class OpenItem(val item: RecipeWithIngredients) : HomeEvent
+    data object LoadMore : HomeEvent
 }
 
 data class HomeState(
@@ -36,6 +38,7 @@ data class HomeState(
     val isSearching: Boolean = false,
     val isList: Boolean = false,
     val showMenu: Boolean = false,
+    val isLoadingMore: Boolean = false,
 )
 
 @HiltViewModel
@@ -46,6 +49,8 @@ class HomeViewModel @Inject constructor(
     private val searchHistoryRepository: SearchHistoryRepository,
     private val recipeRepository: RecipeRepository,
 ) : BaseViewModel<HomeState, HomeEvent>(HomeState(), coroutineDispatchers) {
+
+    private var lastSearchResultResponse: SearchRecipesResponse? = null
 
     init {
         asyncMain {
@@ -85,6 +90,7 @@ class HomeViewModel @Inject constructor(
         is HomeEvent.SelectSearchHistory -> onSelectSearchHistory(event.value)
         is HomeEvent.DeleteSearchHistory -> onDeleteSearchHistory(event.value)
         is HomeEvent.OpenItem -> onOpenItem(event.item)
+        HomeEvent.LoadMore -> onLoadMore()
     }
 
     private fun onChangeSearchActive(active: Boolean) = setState(currentState.copy(isSearchActive = active))
@@ -119,6 +125,8 @@ class HomeViewModel @Inject constructor(
                 navigationController.snackbar("Something went wrong, cannot search for recipes.")
             }
 
+            lastSearchResultResponse = result
+
             setState(currentState.copy(isSearching = false))
         }
     }
@@ -145,5 +153,28 @@ class HomeViewModel @Inject constructor(
     private fun onOpenItem(item: RecipeWithIngredients) {
         val encodedUri = URLEncoder.encode(item.recipe.uri, StandardCharsets.UTF_8.toString())
         navigationController.navigateTo(Destination.Details(encodedUri))
+    }
+
+    private fun onLoadMore() {
+        if (currentState.isLoadingMore) return
+
+        val searchResultsSize = currentState.searchResults.size
+        val searchResultsMax = lastSearchResultResponse?.count ?: searchResultsSize
+        if (searchResultsSize >= searchResultsMax) return
+
+        setState(currentState.copy(isLoadingMore = true))
+
+        val searchResultsNextPage = lastSearchResultResponse?.links?.next?.href ?: return
+        val searchResultsFrom = lastSearchResultResponse?.from ?: 0
+
+        asyncMain {
+            val result = awaitIo {
+                recipeRepository.searchRecipesNextPage(searchResultsNextPage, searchResultsFrom)
+            }
+
+            lastSearchResultResponse = result
+
+            setState(currentState.copy(isLoadingMore = false))
+        }
     }
 }

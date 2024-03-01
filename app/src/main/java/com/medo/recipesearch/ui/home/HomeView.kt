@@ -22,10 +22,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
@@ -51,8 +55,11 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -152,10 +159,13 @@ private fun HomeSearchBar(
     onActiveChange = { events(HomeEvent.ChangeSearchActive(it)) },
     placeholder = { Text("Search recipes") },
     leadingIcon = {
-        Icon(
-            Icons.Default.Search,
-            contentDescription = "Search"
-        )
+        when (state.isLoadingMore) {
+            true -> CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            else -> Icon(
+                Icons.Default.Search,
+                contentDescription = "Search"
+            )
+        }
     },
     trailingIcon = {
         IconButton(
@@ -213,20 +223,36 @@ private fun HomeSearchBar(
 private fun HomeGrid(
     state: HomeState,
     events: (HomeEvent) -> Unit,
-) = LazyVerticalStaggeredGrid(
-    columns = StaggeredGridCells.Fixed(2),
-    modifier = Modifier
-        .fillMaxSize()
-        .padding(vertical = 16.dp),
-    contentPadding = PaddingValues(horizontal = 16.dp),
-    horizontalArrangement = Arrangement.spacedBy(8.dp),
-    verticalItemSpacing = 8.dp,
 ) {
-    items(state.searchResults) {
-        RecipeGridItem(
-            item = it,
-            events = events,
-        )
+    val scrollState = rememberLazyStaggeredGridState()
+    val endReached by remember {
+        derivedStateOf {
+            scrollState.isScrolledToEnd()
+        }
+    }
+
+    LaunchedEffect(endReached) {
+        if (endReached) {
+            events(HomeEvent.LoadMore)
+        }
+    }
+
+    LazyVerticalStaggeredGrid(
+        state = scrollState,
+        columns = StaggeredGridCells.Fixed(2),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalItemSpacing = 8.dp,
+    ) {
+        items(state.searchResults) {
+            RecipeGridItem(
+                item = it,
+                events = events,
+            )
+        }
     }
 }
 
@@ -234,18 +260,34 @@ private fun HomeGrid(
 private fun HomeList(
     state: HomeState,
     events: (HomeEvent) -> Unit,
-) = LazyColumn(
-    modifier = Modifier
-        .fillMaxSize()
-        .padding(vertical = 16.dp),
-    contentPadding = PaddingValues(horizontal = 16.dp),
-    verticalArrangement = Arrangement.spacedBy(8.dp)
 ) {
-    items(state.searchResults) {
-        RecipeListItem(
-            item = it,
-            events = events,
-        )
+    val scrollState = rememberLazyListState()
+    val endReached by remember {
+        derivedStateOf {
+            scrollState.isScrolledToEnd()
+        }
+    }
+
+    LaunchedEffect(endReached) {
+        if (endReached) {
+            events(HomeEvent.LoadMore)
+        }
+    }
+
+    LazyColumn(
+        state = scrollState,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(state.searchResults) {
+            RecipeListItem(
+                item = it,
+                events = events,
+            )
+        }
     }
 }
 
@@ -495,7 +537,7 @@ private fun HomeMenu(
             Spacer(modifier = Modifier.weight(1f))
 
             FilledIconToggleButton(
-                checked = state.isList,
+                checked = !state.isList,
                 onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
                 Icon(
                     Icons.Default.GridView,
@@ -506,7 +548,7 @@ private fun HomeMenu(
             Spacer(modifier = Modifier.width(4.dp))
 
             FilledIconToggleButton(
-                checked = !state.isList,
+                checked = state.isList,
                 onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
                 Icon(
                     Icons.AutoMirrored.Filled.ViewList,
@@ -516,3 +558,9 @@ private fun HomeMenu(
         }
     }
 }
+
+fun LazyListState.isScrolledToEnd() = layoutInfo.totalItemsCount > 0 &&
+        layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+
+fun LazyStaggeredGridState.isScrolledToEnd() = layoutInfo.totalItemsCount > 0 &&
+        layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1

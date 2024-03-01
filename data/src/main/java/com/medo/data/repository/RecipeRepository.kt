@@ -14,6 +14,8 @@ interface RecipeRepository {
 
     suspend fun searchRecipes(query: String): SearchRecipesResponse?
 
+    suspend fun searchRecipesNextPage(url: String, from: Int): SearchRecipesResponse?
+
     fun getRecipe(uri: String): Flow<RecipeWithIngredients>
 }
 
@@ -33,6 +35,22 @@ class EdamamRecipeRepository @Inject constructor(
 
             local.deleteRecipesWithIngredients()
             local.insertRecipesWithIngredients(data.hits.toRecipesWithIngredients())
+
+            return data
+        } catch (e: Exception) {
+            Log.e(javaClass.name, "searchRecipes: ", e)
+            return null
+        }
+    }
+
+    override suspend fun searchRecipesNextPage(url: String, from: Int): SearchRecipesResponse? {
+        try {
+            val response = remote.searchRecipesByUrl(url)
+            if (!response.isSuccessful) return null
+
+            val data = response.body() ?: return null
+
+            local.insertRecipesWithIngredients(data.hits.toRecipesWithIngredients(offset = from))
 
             return data
         } catch (e: Exception) {
