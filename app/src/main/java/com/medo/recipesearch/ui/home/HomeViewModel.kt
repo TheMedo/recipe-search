@@ -32,7 +32,7 @@ data class HomeState(
     val searchHistory: List<SearchHistory> = emptyList(),
     val searchResults: List<RecipeWithIngredients> = emptyList(),
     val isSearching: Boolean = false,
-    val isGrid: Boolean = false,
+    val isList: Boolean = false,
     val showMenu: Boolean = false,
 )
 
@@ -58,8 +58,8 @@ class HomeViewModel @Inject constructor(
             }
         }
         asyncMain {
-            storageRepository.getBoolean(StorageKey.IsGrid).collect {
-                setState(currentState.copy(isGrid = it))
+            storageRepository.getBoolean(StorageKey.IsList).collect {
+                setState(currentState.copy(isList = it))
             }
         }
         asyncMain {
@@ -125,7 +125,7 @@ class HomeViewModel @Inject constructor(
 
     private fun onToggleGrid() {
         asyncIo {
-            storageRepository.setBoolean(StorageKey.IsGrid, !currentState.isGrid)
+            storageRepository.setBoolean(StorageKey.IsList, !currentState.isList)
         }
     }
 

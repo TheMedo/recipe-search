@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 sealed interface StorageKey {
     data object HasSeenWelcome : StorageKey
-    data object IsGrid : StorageKey
+    data object IsList : StorageKey
 }
 
 interface StorageRepository {

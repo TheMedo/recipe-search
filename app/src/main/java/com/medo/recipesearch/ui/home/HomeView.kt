@@ -95,16 +95,16 @@ private fun Home(
     when (state.isSearching) {
         true -> CircularProgressIndicator(modifier = Modifier.padding(top = 48.dp))
         else -> AnimatedContent(
-            targetState = state.isGrid,
+            targetState = state.isList,
             label = "View",
-        ) { isGrid ->
-            when (isGrid) {
-                true -> HomeGrid(
+        ) { isList ->
+            when (isList) {
+                true -> HomeList(
                     state = state,
                     events = events,
                 )
 
-                else -> HomeList(
+                else -> HomeGrid(
                     state = state,
                     events = events,
                 )
@@ -491,7 +491,7 @@ private fun HomeMenu(
             Spacer(modifier = Modifier.weight(1f))
 
             FilledIconToggleButton(
-                checked = state.isGrid,
+                checked = state.isList,
                 onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
                 Icon(
                     Icons.Default.GridView,
@@ -502,7 +502,7 @@ private fun HomeMenu(
             Spacer(modifier = Modifier.width(4.dp))
 
             FilledIconToggleButton(
-                checked = !state.isGrid,
+                checked = !state.isList,
                 onCheckedChange = { events(HomeEvent.ToggleGrid) }) {
                 Icon(
                     Icons.AutoMirrored.Filled.ViewList,
