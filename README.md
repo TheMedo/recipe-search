@@ -3,6 +3,8 @@
 Recipe Search is a simple **showcase** app that implements the latest architectural patterns and design trends that the
 Android platform has to offer. It can be used as an example to quickly bootstrap a new project.
 
+![](https://github.com/TheMedo/recipe-search/blob/main/app.gif)
+
 ## Usage
 
 - Checkout the code
