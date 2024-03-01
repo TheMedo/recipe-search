@@ -12,6 +12,8 @@ import com.medo.navigation.Destination
 import com.medo.navigation.NavigationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 sealed interface HomeEvent {
@@ -141,5 +143,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun onOpenItem(item: RecipeWithIngredients) {
+        val encodedUri = URLEncoder.encode(item.recipe.uri, StandardCharsets.UTF_8.toString())
+        navigationController.navigateTo(Destination.Details(encodedUri))
     }
 }

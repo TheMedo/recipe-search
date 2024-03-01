@@ -11,7 +11,11 @@ interface NavigationController {
 
     fun navigateTo(destination: Destination)
 
+    fun back()
+
     fun snackbar(message: String)
+
+    fun share(message: String)
 }
 
 class ComposeNavigationController @Inject constructor() : NavigationController {
@@ -28,7 +32,9 @@ class ComposeNavigationController @Inject constructor() : NavigationController {
         _events.tryEmit(destination)
     }
 
-    override fun snackbar(message: String) {
-        _events.tryEmit(Destination.Snackbar(message))
-    }
+    override fun back() = navigateTo(Destination.Back)
+
+    override fun snackbar(message: String) = navigateTo(Destination.Snackbar(message))
+
+    override fun share(message: String) = navigateTo(Destination.Share(message))
 }

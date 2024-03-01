@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.medo.data.local.model.RecipeWithIngredients
 import com.medo.recipesearch.common.theme.generateRandomColor
+import com.medo.recipesearch.common.view.Loading
 
 @Composable
 fun HomeView(viewModel: HomeViewModel) {
@@ -123,14 +124,6 @@ private fun Home(
 }
 
 @Composable
-private fun Loading() = Box(
-    modifier = Modifier.fillMaxSize(),
-    contentAlignment = Alignment.Center,
-) {
-    CircularProgressIndicator()
-}
-
-@Composable
 private fun AnimatedSpacer(isSearchActive: Boolean) {
     val animatedHeight by animateDpAsState(
         targetValue = if (isSearchActive) 0.dp else 16.dp,
@@ -158,7 +151,12 @@ private fun HomeSearchBar(
     active = state.isSearchActive,
     onActiveChange = { events(HomeEvent.ChangeSearchActive(it)) },
     placeholder = { Text("Search recipes") },
-    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+    leadingIcon = {
+        Icon(
+            Icons.Default.Search,
+            contentDescription = "Search"
+        )
+    },
     trailingIcon = {
         IconButton(
             onClick = {
@@ -175,7 +173,10 @@ private fun HomeSearchBar(
                     true -> Icons.Default.Clear
                     else -> Icons.Default.MoreVert
                 },
-                contentDescription = null,
+                contentDescription = when (state.isSearchActive) {
+                    true -> "Clear"
+                    else -> "More"
+                }
             )
         }
     },
@@ -194,7 +195,10 @@ private fun HomeSearchBar(
                 IconButton(
                     onClick = { events(HomeEvent.DeleteSearchHistory(it)) }
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = null)
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete"
+                    )
                 }
             },
             modifier = Modifier
@@ -315,7 +319,7 @@ private fun RecipeGridItem(
                 )
             }
 
-            item.recipe.totalTime?.toInt()?.let {
+            item.recipe.totalTime?.toInt()?.takeIf { it in 1..300 }?.let {
                 IconText(
                     icon = Icons.Outlined.Timer,
                     text = it.toString(),
@@ -401,7 +405,7 @@ private fun RecipeListItem(
                     Spacer(modifier = Modifier.width(4.dp))
                 }
 
-                item.recipe.totalTime?.toInt()?.let {
+                item.recipe.totalTime?.toInt()?.takeIf { it > 0 }?.let {
                     IconText(
                         icon = Icons.Outlined.Timer,
                         text = it.toString(),
@@ -431,7 +435,7 @@ private fun IconText(
 ) {
     Icon(
         icon,
-        contentDescription = null,
+        contentDescription = "Icon",
         modifier = Modifier.size(18.dp),
     )
 

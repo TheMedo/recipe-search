@@ -13,6 +13,8 @@ interface RecipeRepository {
     fun getCurrentSearchResults(): Flow<List<RecipeWithIngredients>>
 
     suspend fun searchRecipes(query: String): SearchRecipesResponse?
+
+    fun getRecipe(uri: String): Flow<RecipeWithIngredients>
 }
 
 class EdamamRecipeRepository @Inject constructor(
@@ -38,4 +40,6 @@ class EdamamRecipeRepository @Inject constructor(
             return null
         }
     }
+
+    override fun getRecipe(uri: String): Flow<RecipeWithIngredients> = local.getRecipe(uri)
 }

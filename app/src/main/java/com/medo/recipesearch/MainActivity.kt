@@ -1,6 +1,7 @@
 package com.medo.recipesearch
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -44,9 +45,21 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect("navigation") {
                     navigationController.events.onEach { destination ->
                         when (destination) {
+                            is Destination.Back -> navController.popBackStack()
+
                             is Destination.Snackbar -> scope.launch {
                                 snackbarHostState.showSnackbar(destination.message)
                             }
+
+                            is Destination.Share -> startActivity(
+                                Intent.createChooser(
+                                    Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, destination.text)
+                                    }, "Share recipe"
+                                )
+                            )
 
                             else -> navController.navigate(destination.label) {
                                 when (destination) {

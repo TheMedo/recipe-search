@@ -75,7 +75,7 @@ private fun PulseLogo() {
 
     Icon(
         Icons.Default.RestaurantMenu,
-        contentDescription = null,
+        contentDescription = "Logo",
         modifier = Modifier
             .size(128.dp)
             .scale(scale),

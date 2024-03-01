@@ -15,6 +15,10 @@ interface SearchResultsDao {
     @Query("SELECT * FROM recipes ORDER BY `index`")
     fun getRecipesWithIngredients(): Flow<List<RecipeWithIngredients>>
 
+    @Transaction
+    @Query("SELECT * FROM recipes WHERE uri = :uri")
+    fun getRecipe(uri: String): Flow<RecipeWithIngredients>
+
     @Insert
     suspend fun insertRecipe(recipe: Recipe)
 
