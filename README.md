@@ -1,17 +1,19 @@
 # Welcome to Recipe Search!
 
-Recipe Search is a simple **showcase** app that implements the latest architectural patterns and design trends that the Android platform has to offer. It can be used as an example to quickly bootstrap a new project.
+Recipe Search is a simple **showcase** app that implements the latest architectural patterns and design trends that the
+Android platform has to offer. It can be used as an example to quickly bootstrap a new project.
 
 ## Usage
 
 - Checkout the code
-- Add a `local.properties` file in the root of the project and add two lines:
--- `edamamApiId="YOUR_API_ID" `
--- `edamamApiKey="YOUR_API_KEY"`
+- Add or edit the `local.properties` file in the root of the project by adding:
+- `edamamApiId="YOUR_API_ID"`
+- `edamamApiKey="YOUR_API_KEY"`
 - Sync project with gradle files
 - Run the app
 
-You can obtain your API keys from [Edamam's website](https://developer.edamam.com/edamam-recipe-api) by creating a free Developer account.
+You can obtain your API keys from [Edamam's website](https://developer.edamam.com/edamam-recipe-api) by creating a free
+Developer account.
 
 ## Features
 
@@ -24,7 +26,7 @@ You can obtain your API keys from [Edamam's website](https://developer.edamam.co
 - Reactive approach with States, Events and Effects
 - Clean architecture with Repository pattern
 - Network layer with Retrofit
-- Persistency layer and caching with Room
+- Persistence layer and caching with Room
 - Simple key/value storage with DataStore
 - Serialization with Gson
 - Image loading and caching with Coil
